@@ -36,3 +36,43 @@ class Solution(object):
                 return length
 
         return -1
+
+#Q3 Self dividing numbers
+
+class Solution(object):
+    def selfDividingNumbers(self, left, right):
+        """
+        :type left: int
+        :type right: int
+        :rtype: List[int]
+        """
+
+        self_dividing = []
+        number = left
+        while number <= right:
+            remainder = number  # temp copy to compute with
+            jump_value = 0  # place value of skip, initially 0
+            is_valid = True
+            multiplier = 1  # power of ten tracker to identify the position of a zero
+
+            while remainder > 0:
+                digit = remainder % 10  # the ones digit of the remainder
+                if digit == 0:
+                    is_valid = False
+                    jump_value = multiplier  # place value of the zero
+                elif is_valid and number % digit != 0:
+                    is_valid = False
+
+                remainder //= 10
+                multiplier *= 10
+
+            if is_valid:
+                self_dividing.append(number)
+                number += 1
+
+            elif jump_value > 0:
+                number = (number // (jump_value * 10)) * jump_value * 10 + (jump_value * 10 - 1) // 9
+
+            else:
+                number += 1
+        return self_dividing
