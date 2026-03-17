@@ -15,29 +15,24 @@ class Solution(object):
         if n == 1: return True
         else: return False
 
-# Q2.
+# Q2. repunit problem: given k, find the smallest repunit number divisible by k
 
-# max_value = 10 ** k - 1
-# n = 1
-# while n <= max_value:
-#     if n % k == 0:
-#         return len(str(n))
-#     else:
-#         n = n * 10 + 1
-# return -1
 class Solution(object):
     def smallestRepunitDivByK(self, k):
         """
         :type k: int
         :rtype: int
         """
+        if k <= 0:
+            return -1
 
-        def isrepunit(n):
-            if n <= 0: return False
-            while n > 0:
-                if n % 10 != 1: return False
-                n //= 10
-            return True
+        if k % 2 == 0 or k % 5 == 0:
+            return -1
 
-        if isrepunit(k) True: return len(str(k)
+        remainder = 0
+        for length in range(1, k + 1):
+            remainder = (remainder * 10 + 1) % k  # all the repunits up to length k, mod k
+            if remainder == 0:
+                return length
 
+        return -1
