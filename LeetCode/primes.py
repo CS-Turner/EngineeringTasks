@@ -10,23 +10,16 @@ class Solution(object):
         :rtype: int
         """
 
-        # # check natural numbers less than sqrt(k) to see if they divide k
-        # def prime_check(k):
-        #     upper_bound = int(sqrt(k))
-        #     for j in range(2, upper_bound + 1):
-        #         if k % j == 0: return False
-        #     return True
+        if n <= 2: return 0
 
-        if n < 3: return 0
-
-        is_prime = [True] * n
-        is_prime[0] = is_prime[1] = False
+        is_prime = bytearray([1]) * (n // 2)  # only track the odd numbers
+        is_prime[0] = 0
         upper_bound = int(sqrt(n))
 
-        for i in range(2, upper_bound + 1):
-            if is_prime[i]:
-                is_prime[i ** 2:n:i] = [False] * len(range(i ** 2, n, i))
-        return sum(is_prime)
+        for i in range(3, upper_bound + 1, 2):
+            if is_prime[i // 2]:
+                is_prime[i * i // 2: n // 2: i] = bytearray(len(range(i * i // 2, n // 2, i)))
+        return sum(is_prime) + 1
 
 # Q2. given an integer n, return the number of trailing zeroes in n!.
 
