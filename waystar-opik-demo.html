@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Waystar | Evaluations — Opik Demo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f8fa;
+  --sidebar-bg: #1a1d23;
+  --sidebar-text: #a0a8b8;
+  --sidebar-active: #ffffff;
+  --sidebar-active-bg: #2d3240;
+  --sidebar-accent: #6c63ff;
+  --card: #ffffff;
+  --border: #e5e8ef;
+  --text: #1a1d23;
+  --text-muted: #6b7280;
+  --accent: #6c63ff;
+  --accent-light: #f0effe;
+  --green: #10b981;
+  --green-light: #d1fae5;
+  --red: #ef4444;
+  --red-light: #fee2e2;
+  --amber: #f59e0b;
+  --amber-light: #fef3c7;
+  --blue: #3b82f6;
+  --blue-light: #dbeafe;
+  --tag-bg: #f3f4f6;
+  --tag-text: #374151;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid #2d3240;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.3px;
+}
+
+.sidebar-logo-icon {
+  width: 26px; height: 26px;
+  background: var(--sidebar-accent);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+
+.sidebar-project {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--sidebar-text);
+  background: #2d3240;
+  border-radius: 4px;
+  padding: 4px 8px;
+}
+
+.sidebar-project span {
+  color: #fff;
+  font-weight: 600;
+}
+
+.nav-section {
+  padding: 16px 0 4px;
+}
+
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #555e75;
+  padding: 0 16px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 16px;
+  color: var(--sidebar-text);
+  cursor: pointer;
+  border-radius: 0;
+  transition: background 0.12s, color 0.12s;
+  font-size: 13px;
+  position: relative;
+}
+
+.nav-item:hover { background: #232839; color: #d0d8e8; }
+
+.nav-item.active {
+  background: var(--sidebar-active-bg);
+  color: var(--sidebar-active);
+  font-weight: 500;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--sidebar-accent);
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+
+.badge {
+  margin-left: auto;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 1px 6px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.badge.amber { background: var(--amber); }
+.badge.green { background: var(--green); }
+
+/* ── Main ── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.topbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topbar-breadcrumb {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topbar-breadcrumb .sep { color: var(--border); }
+
+.topbar-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: #5a52d5; }
+
+.btn-secondary {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--bg); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: none;
+}
+.btn-ghost:hover { color: var(--text); background: var(--bg); }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* ── Views ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── Stats row ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+
+.stat-delta {
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--green);
+  font-weight: 500;
+}
+
+.stat-delta.down { color: var(--red); }
+
+/* ── Card ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.card-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+/* ── Table ── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: #fafbfd; }
+
+/* ── Tags / chips ── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+  gap: 4px;
+}
+
+.chip-purple { background: #ede9fe; color: #7c3aed; }
+.chip-green  { background: var(--green-light); color: #059669; }
+.chip-red    { background: var(--red-light); color: #dc2626; }
+.chip-amber  { background: var(--amber-light); color: #d97706; }
+.chip-blue   { background: var(--blue-light); color: #2563eb; }
+.chip-gray   { background: var(--tag-bg); color: var(--tag-text); }
+
+/* ── Score bar ── */
+.score-bar-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.score-bar-bg {
+  flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; max-width: 80px;
+}
+.score-bar-fill {
+  height: 100%; border-radius: 3px;
+}
+.score-val { font-size: 12px; font-weight: 600; min-width: 36px; }
+
+/* ── Detail panel ── */
+.detail-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 100;
+  justify-content: flex-end;
+}
+.detail-overlay.open { display: flex; }
+.detail-panel {
+  width: 520px;
+  background: var(--card);
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+}
+.detail-header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.detail-header-text { flex: 1; }
+.detail-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+.detail-meta { font-size: 12px; color: var(--text-muted); }
+.detail-close {
+  background: none; border: none; font-size: 18px; cursor: pointer;
+  color: var(--text-muted); padding: 2px 6px; border-radius: 4px;
+}
+.detail-close:hover { background: var(--bg); }
+.detail-body { padding: 20px; flex: 1; }
+.detail-section { margin-bottom: 20px; }
+.detail-section-title {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 10px;
+}
+.conv-bubble {
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  max-width: 90%;
+}
+.conv-user {
+  background: var(--accent-light);
+  color: #4c1d95;
+  margin-left: auto;
+  text-align: right;
+}
+.conv-agent {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.conv-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+  opacity: 0.6;
+}
+.metric-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.metric-row:last-child { border-bottom: none; }
+.metric-name { color: var(--text-muted); }
+
+/* ── Annotation queue ── */
+.queue-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.queue-item:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.queue-item.reviewing {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.queue-item-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 8px;
+}
+.queue-item-id { font-size: 11px; color: var(--text-muted); font-family: monospace; }
+.queue-item-q {
+  font-size: 13px; font-weight: 500; margin-bottom: 6px;
+  color: var(--text);
+}
+.queue-item-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* annotation actions */
+.ann-actions {
+  display: flex; gap: 8px; margin-top: 14px;
+  padding-top: 14px; border-top: 1px solid var(--border);
+}
+.ann-btn {
+  flex: 1; padding: 8px; border-radius: 6px; font-size: 13px;
+  font-weight: 600; cursor: pointer; border: 2px solid transparent;
+  transition: all 0.15s;
+}
+.ann-btn-pass {
+  background: var(--green-light); color: #059669; border-color: #a7f3d0;
+}
+.ann-btn-pass:hover, .ann-btn-pass.selected { background: var(--green); color: #fff; border-color: var(--green); }
+.ann-btn-fail {
+  background: var(--red-light); color: #dc2626; border-color: #fca5a5;
+}
+.ann-btn-fail:hover, .ann-btn-fail.selected { background: var(--red); color: #fff; border-color: var(--red); }
+.ann-btn-flag {
+  background: var(--amber-light); color: #d97706; border-color: #fcd34d;
+}
+.ann-btn-flag:hover, .ann-btn-flag.selected { background: var(--amber); color: #fff; border-color: var(--amber); }
+
+.ann-note {
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: inherit;
+  resize: none;
+  color: var(--text);
+  background: var(--bg);
+}
+.ann-note:focus { outline: none; border-color: var(--accent); }
+
+/* ── Experiments ── */
+.exp-row { cursor: pointer; }
+.exp-row:hover td { background: #f5f6ff; }
+.exp-compare-bar {
+  display: flex; gap: 2px; align-items: center;
+}
+.exp-compare-seg {
+  height: 8px; border-radius: 2px;
+}
+
+/* ── Tabs ── */
+.tab-bar {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  background: var(--card);
+  flex-shrink: 0;
+}
+.tab {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.12s, border-color 0.12s;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── Charts ── */
+.chart-wrap {
+  padding: 18px;
+  position: relative;
+  height: 200px;
+}
+
+/* ── Progress ring ── */
+.ring-wrap {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px;
+}
+.ring-val { font-size: 18px; font-weight: 700; }
+.ring-label { font-size: 11px; color: var(--text-muted); }
+
+/* ── Metrics grid ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 18px;
+}
+.metric-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+.metric-card-label {
+  font-size: 11px; color: var(--text-muted); margin-bottom: 4px;
+  font-weight: 500;
+}
+.metric-card-val {
+  font-size: 22px; font-weight: 700; margin-bottom: 2px;
+}
+.metric-card-sub { font-size: 11px; color: var(--text-muted); }
+
+/* ── Experiment detail tabs ── */
+.inline-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border);
+  margin: 0 -18px 14px;
+  padding: 0 18px;
+}
+.inline-tab {
+  padding: 8px 14px; font-size: 12px; font-weight: 500;
+  color: var(--text-muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all 0.12s;
+}
+.inline-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #1a1d23; color: #fff; padding: 10px 20px;
+  border-radius: 8px; font-size: 13px; font-weight: 500;
+  opacity: 0; transition: opacity 0.2s;
+  pointer-events: none; z-index: 999;
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { opacity: 1; }
+
+/* ── Empty state ── */
+.empty { text-align: center; padding: 40px; color: var(--text-muted); }
+.empty-icon { font-size: 32px; margin-bottom: 8px; }
+.empty-text { font-size: 13px; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">⚡</div>
+      Opik
+    </div>
+    <div class="sidebar-project">Project: <span>waystar-eval-demo</span></div>
+  </div>
+
+  <nav>
+    <div class="nav-section">
+      <div class="nav-label">Observability</div>
+      <div class="nav-item" onclick="switchView('traces')">
+        <span class="nav-icon">📡</span> Traces
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Evaluation</div>
+      <div class="nav-item active" id="nav-dataset" onclick="switchView('dataset')">
+        <span class="nav-icon">🗄️</span> Datasets
+      </div>
+      <div class="nav-item" id="nav-experiments" onclick="switchView('experiments')">
+        <span class="nav-icon">🧪</span> Experiments
+      </div>
+      <div class="nav-item" id="nav-annotation" onclick="switchView('annotation')">
+        <span class="nav-icon">✏️</span> Annotation Queues
+        <span class="badge amber">7</span>
+      </div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Configuration</div>
+      <div class="nav-item" onclick="switchView('prompts')">
+        <span class="nav-icon">📝</span> Prompt Library
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<!-- Main area -->
+<main class="main">
+
+  <!-- ── Dataset view ── -->
+  <div id="view-dataset" class="view active">
+    <div class="topbar">
+      <div>
+        <div class="topbar-breadcrumb">
+          <span>waystar-eval-demo</span>
+          <span class="sep">›</span>
+          <span style="color:var(--text); font-weight:600;">Waystar | Evaluations</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="showToast('📤 Export started')">⬇ Export</button>
+        <button class="btn btn-primary" onclick="showToast('➕ Add item dialog would open')">+ Add item</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Dataset Items</div>
+          <div class="stat-value">42</div>
+          <div class="stat-delta">↑ 12 added this week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Intents Covered</div>
+          <div class="stat-value">6</div>
+          <div class="stat-delta">Validated w/ Varun</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Experiments Run</div>
+          <div class="stat-value">4</div>
+          <div class="stat-delta">↑ vs. 2 last week</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Pending Annotation</div>
+          <div class="stat-value" style="color:var(--amber)">7</div>
+          <div class="stat-delta" style="color:var(--text-muted)">Needs human review</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:16px">🗄️</span>
+          <span class="card-title">Waystar | Evaluations</span>
+          <span class="card-subtitle">— 42 items · Golden dataset for Omnichannel Billing Agent (D1)</span>
+          <div style="margin-left:auto; display:flex; gap:8px;">
+            <button class="btn btn-secondary" onclick="showToast('🔍 Filter panel')">⚙ Filter</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>User Message</th>
+              <th>Intent</th>
+              <th>Account</th>
+              <th>Expected Outcome</th>
+              <th>Experiments</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="dataset-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Experiments view ── -->
+  <div id="view-experiments" class="view">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>waystar-eval-demo</span>
+        <span class="sep">›</span>
+        <span style="color:var(--text); font-weight:600;">Experiments</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" onclick="showToast('🚀 New experiment dialog would open')">▶ Run experiment</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-header">
+          <span class="card-title">All experiments</span>
+          <span class="card-subtitle">— waystar-eval-demo · 4 runs</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Experiment</th>
+              <th>Dataset</th>
+              <th>Intent Accuracy</th>
+              <th>Task Completion</th>
+              <th>PHI Safe</th>
+              <th>Avg Turns</th>
+              <th>Avg Latency</th>
+              <th>Ran</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="experiments-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Experiment detail -->
+      <div id="exp-detail" style="display:none">
+        <div class="card">
+          <div class="card-header">
+            <span style="font-size:16px">🧪</span>
+            <span class="card-title" id="exp-detail-title">Experiment</span>
+            <span class="card-subtitle" id="exp-detail-sub"></span>
+            <button class="btn btn-ghost" style="margin-left:auto" onclick="document.getElementById('exp-detail').style.display='none'">✕</button>
+          </div>
+          <div class="metrics-grid" id="exp-detail-metrics"></div>
+          <div style="padding:0 18px 18px;">
+            <div class="card-title" style="margin-bottom:12px; font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px">Results per test case</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>User Message</th>
+                  <th>Intent Match</th>
+                  <th>Task Complete</th>
+                  <th>PHI</th>
+                  <th>Turns</th>
+                  <th>Tone</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="exp-detail-rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Annotation queue view ── -->
+  <div id="view-annotation" class="view">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>waystar-eval-demo</span>
+        <span class="sep">›</span>
+        <span style="color:var(--text); font-weight:600;">Annotation Queues</span>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="showToast('Assigned to you: 7 items')">👤 Assigned to me</button>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:18px; height:calc(100% - 52px); overflow:hidden;">
+      <!-- Queue list -->
+      <div style="width:340px; min-width:340px; overflow-y:auto; padding:20px; border-right:1px solid var(--border); background:var(--bg);">
+        <div style="font-size:13px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+          <span>Pending Review</span>
+          <span class="badge amber" style="position:static">7</span>
+        </div>
+        <div id="queue-list"></div>
+      </div>
+
+      <!-- Annotation panel -->
+      <div style="flex:1; overflow-y:auto; padding:20px;">
+        <div id="ann-panel-empty" class="empty">
+          <div class="empty-icon">✏️</div>
+          <div class="empty-text">Select an item from the queue to review</div>
+        </div>
+        <div id="ann-panel" style="display:none;">
+          <div class="card" style="margin-bottom:0">
+            <div class="card-header">
+              <div>
+                <div class="card-title" id="ann-panel-id" style="font-family:monospace; font-size:12px; color:var(--text-muted)"></div>
+                <div style="font-size:14px; font-weight:600; margin-top:2px;" id="ann-panel-intent"></div>
+              </div>
+              <div style="margin-left:auto; display:flex; gap:6px;" id="ann-panel-chips"></div>
+            </div>
+            <div style="padding:18px;">
+              <!-- Conversation -->
+              <div class="detail-section-title">Conversation</div>
+              <div id="ann-conv" style="margin-bottom:18px;"></div>
+
+              <!-- Metrics -->
+              <div class="detail-section-title">Auto-scored metrics</div>
+              <div id="ann-metrics" style="margin-bottom:18px; border:1px solid var(--border); border-radius:8px; overflow:hidden;"></div>
+
+              <!-- Human annotation -->
+              <div class="detail-section-title">Human annotation</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-bottom:10px;">
+                This response was flagged for review. Assess quality and submit your judgment.
+              </div>
+              <div class="ann-actions" id="ann-action-btns">
+                <button class="ann-btn ann-btn-pass" onclick="selectAnnotation(this, 'pass')">✓ Pass</button>
+                <button class="ann-btn ann-btn-flag" onclick="selectAnnotation(this, 'flag')">⚑ Needs Edit</button>
+                <button class="ann-btn ann-btn-fail" onclick="selectAnnotation(this, 'fail')">✕ Fail</button>
+              </div>
+              <textarea class="ann-note" rows="3" placeholder="Add a note (optional)..."></textarea>
+              <div style="margin-top:10px; display:flex; justify-content:flex-end;">
+                <button class="btn btn-primary" onclick="submitAnnotation()">Submit annotation →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Traces placeholder ── -->
+  <div id="view-traces" class="view">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>waystar-eval-demo</span>
+        <span class="sep">›</span>
+        <span style="color:var(--text); font-weight:600;">Traces</span>
+      </div>
+    </div>
+    <div class="content">
+      <div class="empty">
+        <div class="empty-icon">📡</div>
+        <div class="empty-text" style="font-size:15px; font-weight:600; margin-bottom:8px;">Live trace view</div>
+        <div class="empty-text">Traces from the Omnichannel Billing Agent will appear here as the agent runs.<br>Connect via <code style="background:var(--bg); padding:2px 6px; border-radius:4px; font-size:12px;">opik.track()</code> in your agent code.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Prompts placeholder ── -->
+  <div id="view-prompts" class="view">
+    <div class="topbar">
+      <div class="topbar-breadcrumb">
+        <span>waystar-eval-demo</span>
+        <span class="sep">›</span>
+        <span style="color:var(--text); font-weight:600;">Prompt Library</span>
+      </div>
+    </div>
+    <div class="content">
+      <div class="empty">
+        <div class="empty-icon">📝</div>
+        <div class="empty-text" style="font-size:15px; font-weight:600; margin-bottom:8px;">Prompt Library</div>
+        <div class="empty-text">Version-controlled prompts for the billing agent will appear here.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Dataset item detail panel -->
+<div class="detail-overlay" id="item-overlay" onclick="closeItemDetail(event)">
+  <div class="detail-panel" id="item-panel">
+    <div class="detail-header">
+      <div class="detail-header-text">
+        <div class="detail-title" id="item-panel-title"></div>
+        <div class="detail-meta" id="item-panel-meta"></div>
+      </div>
+      <button class="detail-close" onclick="closeItemPanel()">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-section">
+        <div class="detail-section-title">Sample Conversation</div>
+        <div id="item-panel-conv"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Expected Outcome</div>
+        <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:12px; font-size:13px; color:var(--text); line-height:1.5;" id="item-panel-expected"></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Evaluation Scores (latest experiment)</div>
+        <div id="item-panel-scores"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Data ───────────────────────────────────────────────────────────────────
+
+const INTENTS = [
+  { id: 'billing_inquiry',    label: 'Billing Inquiry',    color: 'chip-blue' },
+  { id: 'identity_query',     label: 'Identity Query',     color: 'chip-purple' },
+  { id: 'bill_explanation',   label: 'Bill Explanation',   color: 'chip-green' },
+  { id: 'payment_dispute',    label: 'Payment Dispute',    color: 'chip-amber' },
+  { id: 'insurance_coverage', label: 'Insurance Coverage', color: 'chip-blue' },
+  { id: 'account_balance',    label: 'Account Balance',    color: 'chip-gray' },
+];
+
+const intentMap = Object.fromEntries(INTENTS.map(i => [i.id, i]));
+
+const DATASET = [
+  {
+    id: 'ws-001', msg: 'Why am I getting billed for this service?',
+    intent: 'billing_inquiry', account: 'Acct #47291',
+    expected: 'Explain the specific service rendered, the billing date, and the payer responsible. Offer to connect with a billing specialist if needed.',
+    conv: [
+      { role: 'user', text: 'Why am I getting billed for this service?' },
+      { role: 'agent', text: 'Great question — I can help clarify that. You received a bill for your visit on March 14th for a consultation with Dr. Patel. Your insurance (BlueCross) covered 80%, leaving a $42 balance. Would you like a full itemized statement?' },
+    ],
+    scores: { intent: 1.0, completion: 1.0, phi: true, turns: 2, tone: 0.91 }
+  },
+  {
+    id: 'ws-002', msg: 'Who are you people and why are you contacting me?',
+    intent: 'identity_query', account: 'Acct #88134',
+    expected: 'Identify Waystar as the billing partner for the patient\'s healthcare provider. Confirm the contact reason is outstanding balance.',
+    conv: [
+      { role: 'user', text: 'Who are you people and why are you contacting me?' },
+      { role: 'agent', text: 'I completely understand — unexpected contacts can be confusing. I\'m reaching out on behalf of St. Luke\'s Medical Center, where you received care on Feb 2nd. Waystar handles their billing. You have a $128 balance remaining after insurance processing. Is there anything I can help clarify?' },
+    ],
+    scores: { intent: 0.94, completion: 1.0, phi: true, turns: 2, tone: 0.88 }
+  },
+  {
+    id: 'ws-003', msg: 'What does this charge on my EOB mean?',
+    intent: 'bill_explanation', account: 'Acct #29301',
+    expected: 'Decode the EOB line item (procedure code, allowed amount, patient responsibility) in plain language.',
+    conv: [
+      { role: 'user', text: 'What does this charge on my EOB mean? It says "99213"' },
+      { role: 'agent', text: 'CPT 99213 is a standard office visit code — specifically for an established patient with a moderate complexity visit. Your provider billed $220, your insurance allowed $160, and after your $30 copay, the remaining $130 was covered. Your share was only the $30 copay.' },
+    ],
+    scores: { intent: 1.0, completion: 0.92, phi: true, turns: 3, tone: 0.95 }
+  },
+  {
+    id: 'ws-004', msg: 'I already paid this bill — why are you contacting me again?',
+    intent: 'payment_dispute', account: 'Acct #61022',
+    expected: 'Acknowledge the dispute, confirm payment history lookup, and escalate to billing specialist or mark for review.',
+    conv: [
+      { role: 'user', text: 'I already paid this bill. You people keep calling me.' },
+      { role: 'agent', text: 'I sincerely apologize for the confusion. Let me pull up your payment history right now... I can see a payment of $85 on April 3rd. It looks like there may be a processing delay on our end. I\'m flagging this for our billing team to review — you should hear back within 24 hours. I\'m sorry for the frustration.' },
+    ],
+    scores: { intent: 0.88, completion: 0.85, phi: true, turns: 4, tone: 0.82 }
+  },
+  {
+    id: 'ws-005', msg: 'Does my insurance cover this procedure?',
+    intent: 'insurance_coverage', account: 'Acct #33450',
+    expected: 'Retrieve coverage information for the specific procedure code and patient plan; caveat that this is not a guarantee of benefits.',
+    conv: [
+      { role: 'user', text: 'Does my Aetna plan cover the MRI I had last month?' },
+      { role: 'agent', text: 'Based on your Aetna PPO plan on file, MRI (CPT 70553) is a covered benefit subject to your $500 deductible. Our records show you\'ve met $320 of that deductible this year, so you\'d be responsible for the remaining $180, then your 20% coinsurance applies. Please verify with Aetna directly for a formal benefits determination.' },
+    ],
+    scores: { intent: 1.0, completion: 0.96, phi: true, turns: 2, tone: 0.93 }
+  },
+  {
+    id: 'ws-006', msg: 'What is my current account balance?',
+    intent: 'account_balance', account: 'Acct #10987',
+    expected: 'State total outstanding balance, itemize by service date, and offer payment options.',
+    conv: [
+      { role: 'user', text: 'What do I owe right now?' },
+      { role: 'agent', text: 'Your current balance is $263.50 across two visits: $128 from Jan 8th (radiology) and $135.50 from Feb 19th (lab work). I can take a payment now, set up a payment plan, or email you a detailed statement — which would be most helpful?' },
+    ],
+    scores: { intent: 1.0, completion: 1.0, phi: true, turns: 2, tone: 0.97 }
+  },
+  {
+    id: 'ws-007', msg: 'This bill is way too high — there must be an error',
+    intent: 'payment_dispute', account: 'Acct #74512',
+    expected: 'Acknowledge concern, initiate billing review, explain dispute process and timeline.',
+    conv: [
+      { role: 'user', text: 'This bill is way too high. $1,400 for a 15-minute visit? That can\'t be right.' },
+      { role: 'agent', text: 'I understand your concern — that does sound surprising. Let me review the itemized charges... I see this includes a specialist consultation fee, two lab panels ordered during the visit, and an urgent care facility fee. I\'m escalating this for a clinical billing review. A specialist will contact you within 2 business days. Would you like a full itemized bill emailed to you in the meantime?' },
+    ],
+    scores: { intent: 0.91, completion: 0.89, phi: false, turns: 5, tone: 0.78 }
+  },
+  {
+    id: 'ws-008', msg: 'Can I set up a payment plan?',
+    intent: 'billing_inquiry', account: 'Acct #55601',
+    expected: 'Offer available payment plan options, collect preference, initiate setup.',
+    conv: [
+      { role: 'user', text: 'Can I pay this in installments?' },
+      { role: 'agent', text: 'Absolutely — we offer flexible payment plans. For your $380 balance, we can set up: 3 monthly payments of $127, or 6 monthly payments of $64. There\'s no interest on either plan. Which would you prefer, or would you like a custom arrangement?' },
+    ],
+    scores: { intent: 0.97, completion: 1.0, phi: true, turns: 3, tone: 0.96 }
+  },
+];
+
+const EXPERIMENTS = [
+  {
+    id: 'exp-004', name: 'gpt-4o-billing-v4', dataset: 'Waystar | Evaluations',
+    intentAcc: 0.96, taskComp: 0.94, phiSafe: '100%', avgTurns: 2.6, avgLatency: '1.4s',
+    ran: '13 May 2026', status: 'complete',
+    results: [
+      { msg: 'Why am I getting billed?', intent: true, complete: true, phi: true, turns: 2, tone: '✓ Warm' },
+      { msg: 'Who are you people?', intent: true, complete: true, phi: true, turns: 2, tone: '✓ Warm' },
+      { msg: 'What does CPT 99213 mean?', intent: true, complete: true, phi: true, turns: 3, tone: '✓ Clear' },
+      { msg: 'I already paid this bill', intent: true, complete: false, phi: true, turns: 4, tone: '⚠ Terse' },
+      { msg: 'Does my insurance cover this?', intent: true, complete: true, phi: true, turns: 2, tone: '✓ Clear' },
+    ]
+  },
+  {
+    id: 'exp-003', name: 'gpt-4o-billing-v3', dataset: 'Waystar | Evaluations',
+    intentAcc: 0.91, taskComp: 0.87, phiSafe: '97%', avgTurns: 3.1, avgLatency: '1.8s',
+    ran: '10 May 2026', status: 'complete',
+    results: [
+      { msg: 'Why am I getting billed?', intent: true, complete: true, phi: true, turns: 2, tone: '✓ Warm' },
+      { msg: 'Who are you people?', intent: false, complete: false, phi: true, turns: 3, tone: '⚠ Terse' },
+      { msg: 'What does CPT 99213 mean?', intent: true, complete: true, phi: true, turns: 4, tone: '✓ Clear' },
+      { msg: 'I already paid this bill', intent: true, complete: false, phi: false, turns: 5, tone: '✗ Blunt' },
+      { msg: 'Does my insurance cover this?', intent: true, complete: true, phi: true, turns: 2, tone: '✓ Clear' },
+    ]
+  },
+  {
+    id: 'exp-002', name: 'claude-3-billing-v2', dataset: 'Waystar | Evaluations',
+    intentAcc: 0.88, taskComp: 0.82, phiSafe: '100%', avgTurns: 3.4, avgLatency: '2.1s',
+    ran: '7 May 2026', status: 'complete',
+    results: []
+  },
+  {
+    id: 'exp-001', name: 'baseline-v1', dataset: 'Waystar | Evaluations',
+    intentAcc: 0.74, taskComp: 0.68, phiSafe: '91%', avgTurns: 4.2, avgLatency: '3.2s',
+    ran: '4 May 2026', status: 'complete',
+    results: []
+  },
+];
+
+const QUEUE_ITEMS = [
+  {
+    id: 'ann-007', qid: 'ws-007', reason: 'PHI flag',
+    chips: [{ label: 'PHI Flagged', cls: 'chip-red' }, { label: 'payment_dispute', cls: 'chip-amber' }],
+  },
+  {
+    id: 'ann-004', qid: 'ws-004', reason: 'Low task completion score',
+    chips: [{ label: 'Low Score', cls: 'chip-amber' }, { label: 'payment_dispute', cls: 'chip-amber' }],
+  },
+  {
+    id: 'ann-003b', qid: 'ws-003', reason: 'Tone check required',
+    chips: [{ label: 'Tone Review', cls: 'chip-blue' }, { label: 'bill_explanation', cls: 'chip-green' }],
+  },
+  {
+    id: 'ann-009', qid: 'ws-002', reason: 'Identity framing review',
+    chips: [{ label: 'Manual Review', cls: 'chip-gray' }, { label: 'identity_query', cls: 'chip-purple' }],
+  },
+];
+
+// ─── State ──────────────────────────────────────────────────────────────────
+let activeQueueItem = null;
+let annotationSelections = {};
+
+// ─── View routing ────────────────────────────────────────────────────────────
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  const navEl = document.getElementById('nav-' + name);
+  if (navEl) navEl.classList.add('active');
+}
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── Dataset ─────────────────────────────────────────────────────────────────
+function renderDataset() {
+  const tbody = document.getElementById('dataset-tbody');
+  tbody.innerHTML = '';
+  DATASET.forEach((item, i) => {
+    const intent = intentMap[item.intent];
+    const score = item.scores;
+    const overall = ((score.intent + score.completion + (score.phi ? 1 : 0) + score.tone) / 4 * 100).toFixed(0);
+    const scoreColor = overall >= 90 ? 'var(--green)' : overall >= 75 ? 'var(--amber)' : 'var(--red)';
+    tbody.innerHTML += `
+      <tr onclick="openItemDetail(${i})" style="cursor:pointer;">
+        <td style="color:var(--text-muted); font-family:monospace; font-size:11px;">${item.id}</td>
+        <td style="max-width:240px;">
+          <div style="font-size:12px; line-height:1.4; color:var(--text);">"${item.msg}"</div>
+        </td>
+        <td><span class="chip ${intent.color}">${intent.label}</span></td>
+        <td style="font-family:monospace; font-size:11px; color:var(--text-muted);">${item.account}</td>
+        <td style="max-width:200px; font-size:12px; color:var(--text-muted); line-height:1.4;">${item.expected.substring(0, 60)}…</td>
+        <td><span class="chip chip-gray">4 runs</span></td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar-bg"><div class="score-bar-fill" style="width:${overall}%; background:${scoreColor}"></div></div>
+            <span class="score-val" style="color:${scoreColor}">${overall}%</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function openItemDetail(idx) {
+  const item = DATASET[idx];
+  const intent = intentMap[item.intent];
+  document.getElementById('item-panel-title').textContent = `${item.id} — ${item.msg}`;
+  document.getElementById('item-panel-meta').innerHTML = `<span class="chip ${intent.color}" style="font-size:11px">${intent.label}</span> &nbsp; ${item.account}`;
+  document.getElementById('item-panel-expected').textContent = item.expected;
+
+  // Conv
+  document.getElementById('item-panel-conv').innerHTML = item.conv.map(c => `
+    <div class="conv-label" style="${c.role === 'user' ? 'text-align:right' : ''}">${c.role === 'user' ? 'Patient' : 'Billing Agent'}</div>
+    <div class="conv-bubble ${c.role === 'user' ? 'conv-user' : 'conv-agent'}">${c.text}</div>
+  `).join('');
+
+  // Scores
+  const s = item.scores;
+  const metrics = [
+    { name: 'Intent Detection', val: (s.intent * 100).toFixed(0) + '%', ok: s.intent > 0.9 },
+    { name: 'Task Completion', val: (s.completion * 100).toFixed(0) + '%', ok: s.completion > 0.85 },
+    { name: 'PHI Safe', val: s.phi ? 'PASS' : 'FAIL', ok: s.phi },
+    { name: 'Avg Turns', val: s.turns, ok: s.turns <= 3 },
+    { name: 'Channel Tone', val: (s.tone * 100).toFixed(0) + '%', ok: s.tone > 0.85 },
+  ];
+  document.getElementById('item-panel-scores').innerHTML = metrics.map(m => `
+    <div class="metric-row">
+      <span class="metric-name">${m.name}</span>
+      <span style="font-weight:600; color:${m.ok ? 'var(--green)' : 'var(--red)'}">${m.val}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('item-overlay').classList.add('open');
+}
+
+function closeItemDetail(e) {
+  if (e.target === document.getElementById('item-overlay')) closeItemPanel();
+}
+function closeItemPanel() {
+  document.getElementById('item-overlay').classList.remove('open');
+}
+
+// ─── Experiments ─────────────────────────────────────────────────────────────
+function renderExperiments() {
+  const tbody = document.getElementById('experiments-tbody');
+  tbody.innerHTML = '';
+  EXPERIMENTS.forEach((exp, i) => {
+    const intentColor = exp.intentAcc >= 0.9 ? 'var(--green)' : exp.intentAcc >= 0.8 ? 'var(--amber)' : 'var(--red)';
+    const compColor = exp.taskComp >= 0.9 ? 'var(--green)' : exp.taskComp >= 0.8 ? 'var(--amber)' : 'var(--red)';
+    tbody.innerHTML += `
+      <tr class="exp-row" onclick="openExpDetail(${i})">
+        <td>
+          <div style="font-weight:600; font-size:12px;">${exp.name}</div>
+          <div style="font-size:11px; font-family:monospace; color:var(--text-muted);">${exp.id}</div>
+        </td>
+        <td style="font-size:12px; color:var(--text-muted);">${exp.dataset}</td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar-bg"><div class="score-bar-fill" style="width:${exp.intentAcc*100}%; background:${intentColor}"></div></div>
+            <span class="score-val" style="color:${intentColor}">${(exp.intentAcc*100).toFixed(0)}%</span>
+          </div>
+        </td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar-bg"><div class="score-bar-fill" style="width:${exp.taskComp*100}%; background:${compColor}"></div></div>
+            <span class="score-val" style="color:${compColor}">${(exp.taskComp*100).toFixed(0)}%</span>
+          </div>
+        </td>
+        <td><span class="chip ${exp.phiSafe === '100%' ? 'chip-green' : 'chip-red'}">${exp.phiSafe}</span></td>
+        <td style="font-weight:600; font-size:12px;">${exp.avgTurns}</td>
+        <td style="font-size:12px; color:var(--text-muted);">${exp.avgLatency}</td>
+        <td style="font-size:11px; color:var(--text-muted);">${exp.ran}</td>
+        <td><span style="color:var(--accent); font-size:12px;">View →</span></td>
+      </tr>
+    `;
+  });
+}
+
+function openExpDetail(i) {
+  const exp = EXPERIMENTS[i];
+  document.getElementById('exp-detail').style.display = 'block';
+  document.getElementById('exp-detail-title').textContent = exp.name;
+  document.getElementById('exp-detail-sub').textContent = `— ${exp.dataset} · ran ${exp.ran}`;
+
+  const mColors = [
+    { val: (exp.intentAcc*100).toFixed(1)+'%', label: 'Intent Accuracy', sub: 'vs 74% baseline', color: 'var(--green)' },
+    { val: (exp.taskComp*100).toFixed(1)+'%', label: 'Task Completion', sub: 'vs 68% baseline', color: 'var(--green)' },
+    { val: exp.phiSafe, label: 'PHI Safe', sub: 'Binary pass/fail', color: exp.phiSafe === '100%' ? 'var(--green)' : 'var(--red)' },
+    { val: exp.avgTurns, label: 'Avg Turns/Task', sub: 'Lower is better', color: exp.avgTurns <= 3 ? 'var(--green)' : 'var(--amber)' },
+    { val: exp.avgLatency, label: 'Avg Latency', sub: 'Per response', color: 'var(--blue)' },
+    { val: '~$0.004', label: 'Avg Cost/Run', sub: 'GPT-4o pricing', color: 'var(--text-muted)' },
+  ];
+  document.getElementById('exp-detail-metrics').innerHTML = mColors.map(m => `
+    <div class="metric-card">
+      <div class="metric-card-label">${m.label}</div>
+      <div class="metric-card-val" style="color:${m.color}">${m.val}</div>
+      <div class="metric-card-sub">${m.sub}</div>
+    </div>
+  `).join('');
+
+  if (exp.results.length) {
+    document.getElementById('exp-detail-rows').innerHTML = exp.results.map(r => `
+      <tr>
+        <td style="font-size:12px; max-width:200px;">"${r.msg}"</td>
+        <td><span class="chip ${r.intent ? 'chip-green' : 'chip-red'}">${r.intent ? '✓' : '✗'}</span></td>
+        <td><span class="chip ${r.complete ? 'chip-green' : 'chip-amber'}">${r.complete ? '✓' : '⚠'}</span></td>
+        <td><span class="chip ${r.phi ? 'chip-green' : 'chip-red'}">${r.phi ? 'Pass' : 'Fail'}</span></td>
+        <td style="font-weight:600">${r.turns}</td>
+        <td style="font-size:12px">${r.tone}</td>
+        <td>
+          <div class="score-bar-wrap">
+            <div class="score-bar-bg" style="max-width:60px"><div class="score-bar-fill" style="width:${r.intent && r.complete && r.phi ? 92 : 61}%; background:${r.intent && r.complete && r.phi ? 'var(--green)' : 'var(--amber)'}"></div></div>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } else {
+    document.getElementById('exp-detail-rows').innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:20px; font-size:12px;">Per-item results not stored for older experiments</td></tr>';
+  }
+
+  document.getElementById('exp-detail').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── Annotation Queue ─────────────────────────────────────────────────────────
+function renderQueue() {
+  const list = document.getElementById('queue-list');
+  list.innerHTML = '';
+  QUEUE_ITEMS.forEach(q => {
+    const item = DATASET.find(d => d.id === q.qid) || {};
+    list.innerHTML += `
+      <div class="queue-item" id="qitem-${q.id}" onclick="openQueueItem('${q.id}')">
+        <div class="queue-item-header">
+          <span class="queue-item-id">${q.id}</span>
+          <span style="font-size:11px; color:var(--text-muted)">${q.reason}</span>
+        </div>
+        <div class="queue-item-q">"${item.msg || q.qid}"</div>
+        <div class="queue-item-meta">
+          ${q.chips.map(c => `<span class="chip ${c.cls}">${c.label}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  });
+}
+
+function openQueueItem(qid) {
+  document.querySelectorAll('.queue-item').forEach(el => el.classList.remove('reviewing'));
+  document.getElementById('qitem-' + qid).classList.add('reviewing');
+  activeQueueItem = qid;
+
+  const q = QUEUE_ITEMS.find(x => x.id === qid);
+  const item = DATASET.find(d => d.id === q.qid) || {};
+  const intent = intentMap[item.intent] || { label: '—', color: 'chip-gray' };
+
+  document.getElementById('ann-panel-empty').style.display = 'none';
+  document.getElementById('ann-panel').style.display = 'block';
+  document.getElementById('ann-panel-id').textContent = q.id + ' · ' + q.qid;
+  document.getElementById('ann-panel-intent').textContent = item.msg || q.qid;
+  document.getElementById('ann-panel-chips').innerHTML = q.chips.map(c => `<span class="chip ${c.cls}">${c.label}</span>`).join('');
+
+  // Conversation
+  document.getElementById('ann-conv').innerHTML = (item.conv || []).map(c => `
+    <div class="conv-label" style="${c.role === 'user' ? 'text-align:right' : ''}">${c.role === 'user' ? 'Patient' : 'Billing Agent'}</div>
+    <div class="conv-bubble ${c.role === 'user' ? 'conv-user' : 'conv-agent'}">${c.text}</div>
+  `).join('');
+
+  // Auto metrics
+  const s = item.scores || {};
+  const metrics = [
+    { name: 'Intent Detection', val: s.intent ? (s.intent*100).toFixed(0)+'%' : '—', ok: s.intent > 0.9 },
+    { name: 'Task Completion', val: s.completion ? (s.completion*100).toFixed(0)+'%' : '—', ok: s.completion > 0.85 },
+    { name: 'PHI Safe', val: s.phi ? 'PASS' : 'FAIL', ok: s.phi },
+    { name: 'Tone Score', val: s.tone ? (s.tone*100).toFixed(0)+'%' : '—', ok: s.tone > 0.85 },
+  ];
+  document.getElementById('ann-metrics').innerHTML = metrics.map(m => `
+    <div class="metric-row" style="padding:9px 14px;">
+      <span class="metric-name">${m.name}</span>
+      <span style="font-weight:600; color:${m.ok ? 'var(--green)' : 'var(--red)'}">${m.val}</span>
+    </div>
+  `).join('');
+
+  // Reset annotation buttons
+  document.querySelectorAll('.ann-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelector('.ann-note').value = '';
+  annotationSelections[qid] = null;
+}
+
+function selectAnnotation(btn, verdict) {
+  document.querySelectorAll('.ann-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  if (activeQueueItem) annotationSelections[activeQueueItem] = verdict;
+}
+
+function submitAnnotation() {
+  if (!activeQueueItem) return;
+  const verdict = annotationSelections[activeQueueItem];
+  if (!verdict) { showToast('⚠️ Please select Pass, Needs Edit, or Fail'); return; }
+
+  // Remove from queue
+  const idx = QUEUE_ITEMS.findIndex(q => q.id === activeQueueItem);
+  if (idx > -1) QUEUE_ITEMS.splice(idx, 1);
+
+  // Update badge
+  document.querySelector('#nav-annotation .badge').textContent = QUEUE_ITEMS.length;
+
+  showToast(`✓ Annotation submitted — ${verdict}`);
+  renderQueue();
+  document.getElementById('ann-panel').style.display = 'none';
+  document.getElementById('ann-panel-empty').style.display = 'block';
+  activeQueueItem = null;
+
+  if (QUEUE_ITEMS.length === 0) {
+    document.getElementById('ann-panel-empty').innerHTML = '<div class="empty-icon">🎉</div><div class="empty-text" style="font-size:15px; font-weight:600; margin-bottom:8px;">Queue complete!</div><div class="empty-text">All items have been reviewed for this cycle.</div>';
+  }
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+renderDataset();
+renderExperiments();
+renderQueue();
+</script>
+</body>
+</html>

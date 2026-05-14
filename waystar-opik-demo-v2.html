@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Waystar | Evaluations — Opik</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f7f8fa;
+  --sidebar-bg: #16181f;
+  --card: #ffffff;
+  --border: #e5e8ef;
+  --text: #111827;
+  --muted: #6b7280;
+  --accent: #6c63ff;
+  --accent-light: #eeedff;
+  --green: #10b981;
+  --green-bg: #d1fae5;
+  --red: #ef4444;
+  --red-bg: #fee2e2;
+  --amber: #f59e0b;
+  --amber-bg: #fef3c7;
+  --blue: #3b82f6;
+  --blue-bg: #dbeafe;
+  --purple: #8b5cf6;
+  --purple-bg: #ede9fe;
+  --cost-color: #0ea5e9;
+  --cost-bg: #e0f2fe;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg); color: var(--text);
+  display: flex; height: 100vh; overflow: hidden; font-size: 13px;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 212px; min-width: 212px;
+  background: var(--sidebar-bg);
+  display: flex; flex-direction: column;
+}
+.sidebar-top {
+  padding: 16px 14px 12px;
+  border-bottom: 1px solid #252830;
+}
+.logo {
+  display: flex; align-items: center; gap: 8px;
+  color: #fff; font-weight: 700; font-size: 14px;
+}
+.logo-icon {
+  width: 26px; height: 26px; border-radius: 6px;
+  background: var(--accent); display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.project-pill {
+  margin-top: 9px;
+  background: #252830; border-radius: 5px;
+  padding: 5px 9px; font-size: 11px; color: #8892a4;
+}
+.project-pill b { color: #d0d8e8; font-weight: 600; }
+
+.nav { padding: 10px 0; flex: 1; }
+.nav-group { margin-bottom: 4px; }
+.nav-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .8px; color: #454d5e;
+  padding: 6px 14px 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 14px; color: #8892a4;
+  cursor: pointer; transition: background .1s, color .1s;
+  font-size: 12.5px; position: relative;
+}
+.nav-item:hover { background: #1f2230; color: #c8d0e0; }
+.nav-item.active {
+  background: #252830; color: #fff; font-weight: 500;
+}
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--accent); border-radius: 0 2px 2px 0;
+}
+.nav-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; background: var(--red);
+  color: #fff; font-size: 10px; font-weight: 700;
+  border-radius: 10px; padding: 1px 6px; min-width: 17px; text-align: center;
+}
+.nav-badge.amber { background: var(--amber); }
+
+/* ── Main ── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar {
+  background: var(--card); border-bottom: 1px solid var(--border);
+  padding: 0 22px; height: 50px;
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.breadcrumb { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+.breadcrumb-cur { color: var(--text); font-weight: 600; font-size: 13px; }
+.topbar-actions { margin-left: auto; display: flex; gap: 8px; }
+
+.btn {
+  padding: 6px 13px; border-radius: 6px; font-size: 12px;
+  font-weight: 500; cursor: pointer; border: none;
+  display: flex; align-items: center; gap: 5px; transition: all .14s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #5a52d5; }
+.btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-ghost { background: transparent; color: var(--muted); border: none; }
+.btn-ghost:hover { color: var(--text); background: var(--bg); }
+
+.content { flex: 1; overflow-y: auto; padding: 22px; }
+
+/* ── Views ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── Cards ── */
+.card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin-bottom: 16px;
+}
+.card-header {
+  display: flex; align-items: center; padding: 13px 17px;
+  border-bottom: 1px solid var(--border); gap: 9px;
+}
+.card-title { font-size: 13px; font-weight: 600; }
+.card-sub { font-size: 12px; color: var(--muted); margin-left: 4px; }
+
+/* ── Stats ── */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 13px; margin-bottom: 18px;
+}
+.stat {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 15px 17px;
+}
+.stat-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 5px; }
+.stat-value { font-size: 26px; font-weight: 700; line-height: 1; }
+.stat-sub { font-size: 11px; margin-top: 3px; color: var(--muted); }
+.stat-delta-up { color: var(--green); }
+.stat-delta-dn { color: var(--red); }
+
+/* ── Table ── */
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  text-align: left; padding: 9px 14px;
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--muted);
+  border-bottom: 1px solid var(--border); background: var(--bg);
+}
+tbody td {
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  font-size: 12px; vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr.clickable:hover { background: #f9faff; cursor: pointer; }
+
+/* ── Chips ── */
+.chip {
+  display: inline-flex; align-items: center; padding: 2px 9px;
+  border-radius: 20px; font-size: 11px; font-weight: 500; gap: 3px; white-space: nowrap;
+}
+.chip-green  { background: var(--green-bg);  color: #059669; }
+.chip-red    { background: var(--red-bg);    color: #dc2626; }
+.chip-amber  { background: var(--amber-bg);  color: #d97706; }
+.chip-blue   { background: var(--blue-bg);   color: #2563eb; }
+.chip-purple { background: var(--purple-bg); color: #7c3aed; }
+.chip-cost   { background: var(--cost-bg);   color: #0369a1; }
+.chip-gray   { background: #f3f4f6; color: #374151; }
+
+/* ── Score bar ── */
+.score-wrap { display: flex; align-items: center; gap: 7px; }
+.score-bg { flex: 1; max-width: 72px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.score-fill { height: 100%; border-radius: 3px; }
+.score-num { font-size: 12px; font-weight: 600; min-width: 34px; }
+
+/* ── Detail overlay ── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.28); z-index: 100; justify-content: flex-end;
+}
+.overlay.open { display: flex; }
+.panel {
+  width: 520px; background: var(--card); height: 100%;
+  overflow-y: auto; box-shadow: -4px 0 24px rgba(0,0,0,.12);
+}
+.panel-header {
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; gap: 10px;
+}
+.panel-header-body { flex: 1; }
+.panel-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.panel-meta { font-size: 12px; color: var(--muted); }
+.panel-close {
+  background: none; border: none; font-size: 18px; cursor: pointer;
+  color: var(--muted); padding: 2px 6px; border-radius: 4px;
+}
+.panel-close:hover { background: var(--bg); }
+.panel-body { padding: 18px; }
+.section-label {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .5px; color: var(--muted); margin-bottom: 10px;
+}
+
+/* ── Conversation bubbles ── */
+.bubble-wrap { margin-bottom: 7px; }
+.bubble-who { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; opacity: .55; margin-bottom: 3px; }
+.bubble {
+  padding: 9px 12px; border-radius: 8px;
+  font-size: 13px; line-height: 1.5; max-width: 88%;
+}
+.bubble-patient { background: var(--accent-light); color: #4c1d95; margin-left: auto; }
+.bubble-patient .bubble-who { text-align: right; }
+.bubble-agent { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+
+/* ── Judge panel ── */
+.judge-box {
+  background: #fffbeb; border: 1px solid #fcd34d;
+  border-radius: 8px; padding: 13px 14px; margin-bottom: 14px;
+}
+.judge-header { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: #92400e; margin-bottom: 8px; }
+.judge-prompt { font-family: monospace; font-size: 11px; color: #78350f; background: #fef3c7; border-radius: 5px; padding: 8px 10px; line-height: 1.5; white-space: pre-wrap; }
+.judge-score-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 10px; border-top: 1px solid #fde68a; font-size: 12px; }
+.judge-reasoning { font-size: 12px; color: #78350f; line-height: 1.5; margin-top: 7px; font-style: italic; }
+
+/* ── Metric rows ── */
+.metric-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+.metric-row:last-child { border-bottom: none; }
+.metric-name { color: var(--muted); }
+
+/* ── Cost breakdown ── */
+.cost-breakdown { display: flex; flex-direction: column; gap: 8px; }
+.cost-line { display: flex; justify-content: space-between; align-items: center; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.cost-line:last-child { border-bottom: none; font-weight: 700; font-size: 13px; }
+.token-bar-wrap { flex: 1; margin: 0 12px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; max-width: 100px; }
+.token-bar { height: 100%; border-radius: 3px; }
+
+/* ── Annotation ── */
+.queue-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 15px 17px; margin-bottom: 10px;
+  cursor: pointer; transition: border-color .14s, box-shadow .14s;
+}
+.queue-card:hover, .queue-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+.queue-id { font-family: monospace; font-size: 11px; color: var(--muted); margin-bottom: 5px; }
+.queue-q { font-size: 13px; font-weight: 500; margin-bottom: 8px; }
+.ann-btn-row { display: flex; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.ann-btn {
+  flex: 1; padding: 7px 8px; border-radius: 6px; font-size: 12px;
+  font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all .13s;
+}
+.ann-pass { background: var(--green-bg); color: #059669; border-color: #a7f3d0; }
+.ann-pass:hover, .ann-pass.sel { background: var(--green); color: #fff; border-color: var(--green); }
+.ann-edge { background: var(--amber-bg); color: #d97706; border-color: #fcd34d; }
+.ann-edge:hover, .ann-edge.sel { background: var(--amber); color: #fff; border-color: var(--amber); }
+.ann-fail { background: var(--red-bg); color: #dc2626; border-color: #fca5a5; }
+.ann-fail:hover, .ann-fail.sel { background: var(--red); color: #fff; border-color: var(--red); }
+.ann-note {
+  width: 100%; margin-top: 10px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-size: 12px; font-family: inherit; resize: none;
+  color: var(--text); background: var(--bg);
+}
+.ann-note:focus { outline: none; border-color: var(--accent); }
+
+/* ── Chart containers ── */
+.chart-area { padding: 18px; position: relative; }
+
+/* ── Model compare ── */
+.model-row { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+.model-name { font-size: 12px; font-weight: 600; min-width: 130px; }
+.model-bar-bg { flex: 1; height: 22px; background: var(--bg); border-radius: 4px; overflow: hidden; position: relative; }
+.model-bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; color: #fff; transition: width .5s ease; }
+.model-cost { font-size: 12px; font-weight: 600; min-width: 55px; text-align: right; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  background: #111; color: #fff; padding: 9px 18px; border-radius: 7px;
+  font-size: 12px; font-weight: 500; opacity: 0; transition: opacity .18s;
+  pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; }
+
+/* ── Highlight ── */
+.intent-match { font-weight: 600; color: var(--green); }
+.intent-miss  { font-weight: 600; color: var(--red); }
+
+/* ── Scale table ── */
+.scale-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: 12px; }
+.scale-row:last-child { border-bottom: none; }
+.scale-row.highlight { background: var(--accent-light); }
+.scale-vol { color: var(--muted); min-width: 100px; }
+.scale-cost { font-weight: 700; min-width: 80px; text-align: right; }
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="logo"><div class="logo-icon">⚡</div> Opik</div>
+    <div class="project-pill">Project: <b>waystar-eval-demo</b></div>
+  </div>
+  <nav class="nav">
+    <div class="nav-group">
+      <div class="nav-label">Evaluation</div>
+      <div class="nav-item active" id="nav-intent" onclick="go('intent')">
+        <span class="nav-icon">🎯</span> Intent Detection
+      </div>
+      <div class="nav-item" id="nav-cost" onclick="go('cost')">
+        <span class="nav-icon">💰</span> Cost per Interaction
+      </div>
+      <div class="nav-item" id="nav-queue" onclick="go('queue')">
+        <span class="nav-icon">✏️</span> Annotation Queue
+        <span class="nav-badge amber" id="queue-badge">5</span>
+      </div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Other Metrics</div>
+      <div class="nav-item" onclick="toast('📡 Task Completion — coming in next sprint')">
+        <span class="nav-icon">✅</span> Task Completion
+      </div>
+      <div class="nav-item" onclick="toast('📡 Hallucination Rate — coming in next sprint')">
+        <span class="nav-icon">🔬</span> Hallucination Rate
+      </div>
+    </div>
+  </nav>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- ══ INTENT DETECTION ══ -->
+  <div id="view-intent" class="view active">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>waystar-eval-demo</span> <span>›</span>
+        <span class="breadcrumb-cur">Intent Detection</span>
+      </div>
+      <div style="margin-left:12px; font-size:11px; color:var(--muted); background:var(--purple-bg); color:#7c3aed; padding:3px 9px; border-radius:12px; font-weight:600;">LLM-as-Judge</div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="toast('📤 Exported to CSV')">⬇ Export</button>
+        <button class="btn btn-primary" onclick="toast('▶ Eval run started — 42 items queued')">▶ Re-run eval</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-label">Intent Accuracy</div>
+          <div class="stat-value" style="color:var(--green)">88%</div>
+          <div class="stat-sub stat-delta-up">↑ 14pp vs. baseline</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Exact Match</div>
+          <div class="stat-value">37<span style="font-size:16px; color:var(--muted)">/42</span></div>
+          <div class="stat-sub">Items evaluated</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Misfires</div>
+          <div class="stat-value" style="color:var(--amber)">5</div>
+          <div class="stat-sub stat-delta-dn">2 sent to annotation queue</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Avg Judge Score</div>
+          <div class="stat-value">8.4<span style="font-size:14px; color:var(--muted)">/10</span></div>
+          <div class="stat-sub">LLM confidence</div>
+        </div>
+      </div>
+
+      <!-- Results table -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:15px">🎯</span>
+          <span class="card-title">Intent Detection Results</span>
+          <span class="card-sub">— gpt-4o-billing-v4 · run May 13 2026</span>
+          <div style="margin-left:auto; display:flex; gap:7px;">
+            <button class="btn btn-secondary" style="font-size:11px" onclick="filterMisfires()">⚠ Show misfires only</button>
+            <button class="btn btn-ghost" style="font-size:11px" onclick="clearFilter()">Clear filter</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px">#</th>
+              <th>Patient Message</th>
+              <th>Ground Truth Intent</th>
+              <th>Agent's Parse</th>
+              <th>Judge Score</th>
+              <th>Match</th>
+            </tr>
+          </thead>
+          <tbody id="intent-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Intent distribution chart -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Intent Distribution — Accuracy by Category</span>
+        </div>
+        <div class="chart-area" style="height:220px">
+          <canvas id="intentChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ COST PER INTERACTION ══ -->
+  <div id="view-cost" class="view">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>waystar-eval-demo</span> <span>›</span>
+        <span class="breadcrumb-cur">Cost per Interaction</span>
+      </div>
+      <div style="margin-left:12px; font-size:11px; background:var(--cost-bg); color:#0369a1; padding:3px 9px; border-radius:12px; font-weight:600;">Deterministic</div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary" onclick="toast('📤 Exported cost breakdown')">⬇ Export</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-label">Avg Cost / Interaction</div>
+          <div class="stat-value" style="color:var(--cost-color)">$0.006</div>
+          <div class="stat-sub">gpt-4o · all intents</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Avg Input Tokens</div>
+          <div class="stat-value">843</div>
+          <div class="stat-sub">System + history + query</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Avg Output Tokens</div>
+          <div class="stat-value">218</div>
+          <div class="stat-sub">Agent response</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">10K calls / mo</div>
+          <div class="stat-value" style="color:var(--green)">$60</div>
+          <div class="stat-sub stat-delta-up">Unit economics at scale</div>
+        </div>
+      </div>
+
+      <!-- Two columns -->
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+
+        <!-- Cost by intent -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Cost by Intent</span>
+            <span class="card-sub">— avg tokens &amp; $ per intent type</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Intent</th>
+                <th>Avg Turns</th>
+                <th>Avg Tokens</th>
+                <th>Avg Cost</th>
+              </tr>
+            </thead>
+            <tbody id="cost-intent-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Model comparison -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Model Comparison</span>
+            <span class="card-sub">— cost vs. intent accuracy trade-off</span>
+          </div>
+          <div style="padding:16px 17px;">
+            <div id="model-compare-rows"></div>
+            <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); line-height:1.5;">
+              ★ <b style="color:var(--text)">gpt-4o</b> selected for D1 — best accuracy at acceptable cost. Re-evaluate on 50K volume if budget becomes a constraint.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost at scale -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Cost at Scale — gpt-4o · $0.006 / interaction</span>
+          <span class="card-sub">— projection for Waystar billing volume</span>
+        </div>
+        <div style="display:flex;">
+          <div style="flex:1; border-right:1px solid var(--border);">
+            <div style="padding:14px 17px 0; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.4px; color:var(--muted); margin-bottom:4px;">Monthly volume → LLM cost</div>
+            <div id="scale-rows"></div>
+          </div>
+          <div style="flex:1;">
+            <div class="chart-area" style="height:180px;">
+              <canvas id="costChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-conversation table -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Per-conversation breakdown</span>
+          <span class="card-sub">— click any row for token detail</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Patient Message</th>
+              <th>Intent</th>
+              <th>Input Tok.</th>
+              <th>Output Tok.</th>
+              <th>Cost</th>
+              <th>Turns</th>
+            </tr>
+          </thead>
+          <tbody id="cost-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ANNOTATION QUEUE ══ -->
+  <div id="view-queue" class="view">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>waystar-eval-demo</span> <span>›</span>
+        <span class="breadcrumb-cur">Annotation Queue</span>
+      </div>
+      <div style="margin-left:12px; font-size:12px; color:var(--muted)">Flagged by intent misfire · needs human judgment</div>
+    </div>
+
+    <div style="display:flex; height:calc(100% - 50px); overflow:hidden;">
+      <!-- Queue list -->
+      <div style="width:330px; min-width:330px; overflow-y:auto; padding:18px; border-right:1px solid var(--border); background:var(--bg);">
+        <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+          Pending Review
+          <span class="nav-badge amber" id="q-count-label" style="position:static">5</span>
+        </div>
+        <div id="q-list"></div>
+      </div>
+
+      <!-- Review panel -->
+      <div style="flex:1; overflow-y:auto; padding:20px;" id="q-right">
+        <div id="q-empty" style="text-align:center; padding:60px 20px; color:var(--muted);">
+          <div style="font-size:28px; margin-bottom:10px;">✏️</div>
+          <div style="font-size:14px; font-weight:600; margin-bottom:6px;">Select an item to review</div>
+          <div style="font-size:12px;">These conversations were flagged because the agent's intent parse didn't match the ground truth label. Your annotation helps calibrate the LLM judge.</div>
+        </div>
+        <div id="q-panel" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Item detail overlay (intent) -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="panel" id="panel">
+    <div class="panel-header">
+      <div class="panel-header-body">
+        <div class="panel-title" id="panel-title"></div>
+        <div class="panel-meta" id="panel-meta"></div>
+      </div>
+      <button class="panel-close" onclick="closePanelBtn()">✕</button>
+    </div>
+    <div class="panel-body" id="panel-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+// ─── Data ──────────────────────────────────────────────────────────────────
+
+const ITEMS = [
+  {
+    id:'ws-001', msg:'Why am I getting billed for this service?',
+    truthIntent:'billing_inquiry', agentIntent:'billing_inquiry', match:true, judgeScore:9.2,
+    conv:[
+      {r:'user',t:'Why am I getting billed for this service?'},
+      {r:'agent',t:'You received a bill for your visit on March 14th with Dr. Patel. Your BlueCross plan covered 80%, leaving a $42 patient responsibility. Want an itemized statement?'}
+    ],
+    judgeReasoning:'Agent correctly identified billing inquiry intent. Response directly addresses the charge source and remaining balance.',
+    inputTok:812, outputTok:198, turns:2
+  },
+  {
+    id:'ws-002', msg:'Who are you people and why are you contacting me?',
+    truthIntent:'identity_query', agentIntent:'identity_query', match:true, judgeScore:8.8,
+    conv:[
+      {r:'user',t:'Who are you people and why are you contacting me?'},
+      {r:'agent',t:"I'm reaching out on behalf of St. Luke's Medical Center — Waystar handles their billing. You have a $128 balance remaining after insurance. Can I help clarify?"}
+    ],
+    judgeReasoning:'Intent correctly identified as identity_query. Agent appropriately establishes context and purpose.',
+    inputTok:796, outputTok:172, turns:2
+  },
+  {
+    id:'ws-003', msg:'What does this charge on my EOB mean?',
+    truthIntent:'bill_explanation', agentIntent:'bill_explanation', match:true, judgeScore:9.5,
+    conv:[
+      {r:'user',t:'What does this charge on my EOB mean? It says "99213"'},
+      {r:'agent',t:'CPT 99213 is a standard office visit for an established patient. Your provider billed $220, your plan allowed $160, and after your $30 copay, your share was just the copay.'}
+    ],
+    judgeReasoning:'Strong match. Agent decoded the CPT code accurately and explained patient responsibility clearly.',
+    inputTok:874, outputTok:231, turns:3
+  },
+  {
+    id:'ws-004', msg:'I already paid this bill — why are you contacting me?',
+    truthIntent:'payment_dispute', agentIntent:'billing_inquiry', match:false, judgeScore:4.1,
+    conv:[
+      {r:'user',t:'I already paid this bill. You people keep calling me.'},
+      {r:'agent',t:"Let me pull up your balance — I'm showing $85 outstanding on account #61022. Would you like to make a payment today?"}
+    ],
+    judgeReasoning:'MISFIRE — patient clearly expressed a payment dispute ("I already paid") but agent treated this as a routine balance inquiry and offered to collect payment again. This risks patient frustration and compliance issues.',
+    inputTok:901, outputTok:142, turns:4
+  },
+  {
+    id:'ws-005', msg:'Does my insurance cover this procedure?',
+    truthIntent:'insurance_coverage', agentIntent:'insurance_coverage', match:true, judgeScore:8.9,
+    conv:[
+      {r:'user',t:'Does my Aetna plan cover the MRI I had last month?'},
+      {r:'agent',t:'Based on your Aetna PPO on file, MRI (CPT 70553) is covered subject to your $500 deductible. You\'ve met $320 this year, so you\'d owe the remaining $180, then 20% coinsurance. Verify with Aetna for a formal determination.'}
+    ],
+    judgeReasoning:'Correct intent. Response provides specific coverage detail with appropriate disclaimer.',
+    inputTok:988, outputTok:267, turns:2
+  },
+  {
+    id:'ws-006', msg:'What is my current account balance?',
+    truthIntent:'account_balance', agentIntent:'account_balance', match:true, judgeScore:9.7,
+    conv:[
+      {r:'user',t:'What do I owe right now?'},
+      {r:'agent',t:'Your balance is $263.50 — $128 from Jan 8 (radiology) and $135.50 from Feb 19 (lab work). I can take payment, set up a plan, or email a statement. What would help?'}
+    ],
+    judgeReasoning:'Perfect intent match and excellent response — clear balance breakdown with actionable next steps.',
+    inputTok:743, outputTok:189, turns:2
+  },
+  {
+    id:'ws-007', msg:'This bill is way too high — there must be an error',
+    truthIntent:'payment_dispute', agentIntent:'bill_explanation', match:false, judgeScore:3.8,
+    conv:[
+      {r:'user',t:"This bill is way too high. $1,400 for a 15-minute visit? That can't be right."},
+      {r:'agent',t:'I can explain what\'s on your bill — this includes a specialist consultation, two lab panels, and an urgent care facility fee.'}
+    ],
+    judgeReasoning:'MISFIRE — patient is disputing the bill ("can\'t be right", "error") which requires a dispute intake workflow. Agent responded with bill explanation only, missing the escalation path. Dispute not acknowledged.',
+    inputTok:923, outputTok:154, turns:5
+  },
+  {
+    id:'ws-008', msg:'Can I set up a payment plan?',
+    truthIntent:'billing_inquiry', agentIntent:'billing_inquiry', match:true, judgeScore:9.1,
+    conv:[
+      {r:'user',t:'Can I pay this in installments?'},
+      {r:'agent',t:'Absolutely. For your $380 balance: 3 monthly payments of $127, or 6 payments of $64 — no interest on either. Which works better, or would you like a custom plan?'}
+    ],
+    judgeReasoning:'Correct intent. Efficient response with concrete options, no unnecessary friction.',
+    inputTok:771, outputTok:203, turns:3
+  },
+  {
+    id:'ws-009', msg:'Why did my insurance reject this claim?',
+    truthIntent:'insurance_coverage', agentIntent:'payment_dispute', match:false, judgeScore:5.2,
+    conv:[
+      {r:'user',t:'Why did my insurance reject this claim?'},
+      {r:'agent',t:"I can open a billing dispute for you. Could you confirm your account number so I can get started?"}
+    ],
+    judgeReasoning:'Partial misfire — claim rejection is primarily an insurance_coverage question requiring EOB review, not a billing dispute workflow. Agent jumped to dispute intake prematurely.',
+    inputTok:855, outputTok:133, turns:2
+  },
+];
+
+const INTENT_META = {
+  billing_inquiry:    { label:'Billing Inquiry',     chip:'chip-blue' },
+  identity_query:     { label:'Identity Query',      chip:'chip-purple' },
+  bill_explanation:   { label:'Bill Explanation',    chip:'chip-green' },
+  payment_dispute:    { label:'Payment Dispute',     chip:'chip-amber' },
+  insurance_coverage: { label:'Insurance Coverage',  chip:'chip-blue' },
+  account_balance:    { label:'Account Balance',     chip:'chip-gray' },
+};
+
+const COST_PER_INPUT  = 5   / 1_000_000;  // $5 / 1M tokens (gpt-4o)
+const COST_PER_OUTPUT = 15  / 1_000_000;  // $15 / 1M tokens
+
+function itemCost(item) {
+  return (item.inputTok * COST_PER_INPUT + item.outputTok * COST_PER_OUTPUT).toFixed(4);
+}
+
+// Intent cost grouping
+const INTENT_COST = {
+  billing_inquiry:    { turns:2.4, tokens:1010, cost:'$0.005' },
+  identity_query:     { turns:2.1, tokens:968,  cost:'$0.005' },
+  bill_explanation:   { turns:3.2, tokens:1105, cost:'$0.006' },
+  payment_dispute:    { turns:4.8, tokens:1380, cost:'$0.009' },
+  insurance_coverage: { turns:2.6, tokens:1255, cost:'$0.007' },
+  account_balance:    { turns:2.0, tokens:932,  cost:'$0.005' },
+};
+
+const MODELS = [
+  { name:'gpt-4o',             cost:'$0.0060', acc:88, barPct:60, color:'var(--accent)' },
+  { name:'gpt-4o-mini',        cost:'$0.0008', acc:74, barPct:15, color:'var(--green)' },
+  { name:'claude-sonnet-4',    cost:'$0.0042', acc:85, barPct:42, color:'#f59e0b' },
+  { name:'claude-haiku-4',     cost:'$0.0009', acc:71, barPct:16, color:'#6b7280' },
+];
+
+const SCALE = [
+  { vol:'1,000 / mo',   cost:'$6',    cur: false },
+  { vol:'10,000 / mo',  cost:'$60',   cur: false },
+  { vol:'50,000 / mo',  cost:'$300',  cur: true  },
+  { vol:'100,000 / mo', cost:'$600',  cur: false },
+  { vol:'500,000 / mo', cost:'$3,000',cur: false },
+];
+
+// ─── Annotation queue state ──────────────────────────────────────────────────
+let QUEUE = ITEMS.filter(i => !i.match).map(i => ({ ...i, verdict: null }));
+// Add the partial-miss too
+const partial = ITEMS.find(i => i.id === 'ws-009');
+if (partial && !QUEUE.find(q => q.id === 'ws-009')) QUEUE.push({ ...partial, verdict: null });
+let activeQId = null;
+
+// ─── Filtered state ──────────────────────────────────────────────────────────
+let showMisfires = false;
+
+// ─── View routing ────────────────────────────────────────────────────────────
+function go(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+}
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast-el');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ─── Filter ──────────────────────────────────────────────────────────────────
+function filterMisfires() { showMisfires = true; renderIntentTable(); }
+function clearFilter()    { showMisfires = false; renderIntentTable(); }
+
+// ─── Intent table ─────────────────────────────────────────────────────────────
+function renderIntentTable() {
+  const rows = showMisfires ? ITEMS.filter(i => !i.match) : ITEMS;
+  const tbody = document.getElementById('intent-tbody');
+  tbody.innerHTML = '';
+  rows.forEach((item, idx) => {
+    const tm = INTENT_META[item.truthIntent] || {};
+    const am = INTENT_META[item.agentIntent] || {};
+    const scoreColor = item.judgeScore >= 8 ? 'var(--green)' : item.judgeScore >= 6 ? 'var(--amber)' : 'var(--red)';
+    tbody.innerHTML += `
+      <tr class="clickable" onclick="openItem('${item.id}')">
+        <td style="color:var(--muted); font-family:monospace; font-size:11px">${item.id}</td>
+        <td style="max-width:220px; line-height:1.4">"${item.msg}"</td>
+        <td><span class="chip ${tm.chip}">${tm.label}</span></td>
+        <td><span class="chip ${am.chip} ${!item.match ? 'intent-miss' : ''}" style="${!item.match ? 'background:var(--red-bg); color:#dc2626; border:1px solid #fca5a5' : ''}">${am.label}</span></td>
+        <td>
+          <div class="score-wrap">
+            <div class="score-bg"><div class="score-fill" style="width:${item.judgeScore*10}%; background:${scoreColor}"></div></div>
+            <span class="score-num" style="color:${scoreColor}">${item.judgeScore}</span>
+          </div>
+        </td>
+        <td><span class="chip ${item.match ? 'chip-green' : 'chip-red'}">${item.match ? '✓ Match' : '✗ Misfire'}</span></td>
+      </tr>`;
+  });
+}
+
+// ─── Item detail ─────────────────────────────────────────────────────────────
+function openItem(id) {
+  const item = ITEMS.find(i => i.id === id);
+  const tm = INTENT_META[item.truthIntent] || {};
+  const am = INTENT_META[item.agentIntent] || {};
+  const cost = itemCost(item);
+
+  document.getElementById('panel-title').textContent = `${item.id} — "${item.msg}"`;
+  document.getElementById('panel-meta').innerHTML = `
+    <span class="chip ${tm.chip}" style="font-size:11px">${tm.label}</span>
+    &nbsp;Judge score: <b style="color:${item.judgeScore>=8?'var(--green)':item.judgeScore>=6?'var(--amber)':'var(--red)'}">${item.judgeScore}/10</b>
+    &nbsp;·&nbsp;Cost: <b style="color:var(--cost-color)">$${cost}</b>`;
+
+  document.getElementById('panel-body').innerHTML = `
+    <div style="margin-bottom:18px">
+      <div class="section-label">Conversation</div>
+      ${item.conv.map(c => `
+        <div class="bubble-wrap">
+          <div class="bubble-who" style="${c.r==='user'?'text-align:right':''}">${c.r==='user'?'Patient':'Billing Agent'}</div>
+          <div class="bubble ${c.r==='user'?'bubble-patient':'bubble-agent'}">${c.t}</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="judge-box">
+      <div class="judge-header">🤖 LLM Judge Evaluation</div>
+      <div class="judge-prompt">Patient said: "${item.msg}"
+Agent parsed intent as: ${item.agentIntent}
+Ground truth intent: ${item.truthIntent}
+
+Score 1–10: How well does the agent's interpretation match?</div>
+      <div class="judge-reasoning">"${item.judgeReasoning}"</div>
+      <div class="judge-score-row">
+        <span style="color:#92400e; font-size:12px">Alignment score</span>
+        <span style="font-size:18px; font-weight:700; color:${item.judgeScore>=8?'var(--green)':item.judgeScore>=6?'var(--amber)':'var(--red)'}">
+          ${item.judgeScore} / 10
+        </span>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:4px">Token Cost Breakdown</div>
+    <div class="cost-breakdown" style="border:1px solid var(--border); border-radius:8px; overflow:hidden; padding:10px 14px;">
+      <div class="cost-line">
+        <span style="color:var(--muted)">Input tokens (sys prompt + history + query)</span>
+        <div class="token-bar-wrap"><div class="token-bar" style="width:${Math.round(item.inputTok/12)}%; background:var(--blue)"></div></div>
+        <span style="color:var(--muted); font-size:12px">${item.inputTok} tok</span>
+        <span style="font-weight:600; min-width:55px; text-align:right">$${(item.inputTok*COST_PER_INPUT).toFixed(5)}</span>
+      </div>
+      <div class="cost-line">
+        <span style="color:var(--muted)">Output tokens (agent response)</span>
+        <div class="token-bar-wrap"><div class="token-bar" style="width:${Math.round(item.outputTok/12)}%; background:var(--accent)"></div></div>
+        <span style="color:var(--muted); font-size:12px">${item.outputTok} tok</span>
+        <span style="font-weight:600; min-width:55px; text-align:right">$${(item.outputTok*COST_PER_OUTPUT).toFixed(5)}</span>
+      </div>
+      <div class="cost-line">
+        <span>Total conversation cost</span>
+        <div class="token-bar-wrap"></div>
+        <span></span>
+        <span style="color:var(--cost-color); min-width:55px; text-align:right">$${cost}</span>
+      </div>
+    </div>`;
+
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeOverlay(e) { if (e.target === document.getElementById('overlay')) closePanelBtn(); }
+function closePanelBtn()  { document.getElementById('overlay').classList.remove('open'); }
+
+// ─── Cost table ───────────────────────────────────────────────────────────────
+function renderCostTable() {
+  // By intent
+  const intentTbody = document.getElementById('cost-intent-tbody');
+  intentTbody.innerHTML = '';
+  Object.entries(INTENT_COST).forEach(([key, d]) => {
+    const m = INTENT_META[key] || {};
+    intentTbody.innerHTML += `
+      <tr>
+        <td><span class="chip ${m.chip}">${m.label}</span></td>
+        <td style="font-weight:600; text-align:center">${d.turns}</td>
+        <td style="text-align:center">${d.tokens.toLocaleString()}</td>
+        <td style="font-weight:700; color:var(--cost-color)">${d.cost}</td>
+      </tr>`;
+  });
+
+  // Model compare
+  const mcr = document.getElementById('model-compare-rows');
+  mcr.innerHTML = MODELS.map(m => `
+    <div class="model-row">
+      <div class="model-name">${m.name}${m.name==='gpt-4o'?' <span style="font-size:10px; color:var(--accent)">★ selected</span>':''}</div>
+      <div class="model-bar-bg">
+        <div class="model-bar-fill" style="width:${m.barPct}%; background:${m.color}">
+          ${m.acc}% acc.
+        </div>
+      </div>
+      <div class="model-cost" style="color:var(--cost-color)">${m.cost}</div>
+    </div>`).join('');
+
+  // Scale
+  const sr = document.getElementById('scale-rows');
+  sr.innerHTML = SCALE.map(s => `
+    <div class="scale-row ${s.cur ? 'highlight' : ''}">
+      <span class="scale-vol">${s.vol}</span>
+      <span class="scale-cost" style="color:var(--cost-color)">${s.cost}</span>
+      ${s.cur ? '<span style="font-size:10px; font-weight:600; color:var(--accent)">← Waystar est.</span>' : ''}
+    </div>`).join('');
+
+  // Per-conversation
+  const tbody = document.getElementById('cost-tbody');
+  tbody.innerHTML = '';
+  ITEMS.forEach(item => {
+    const m = INTENT_META[item.truthIntent] || {};
+    const cost = itemCost(item);
+    const costNum = parseFloat(cost);
+    const costColor = costNum > 0.008 ? 'var(--amber)' : 'var(--green)';
+    tbody.innerHTML += `
+      <tr class="clickable" onclick="openItem('${item.id}')">
+        <td style="color:var(--muted); font-family:monospace; font-size:11px">${item.id}</td>
+        <td style="max-width:200px; line-height:1.4">"${item.msg}"</td>
+        <td><span class="chip ${m.chip}">${m.label}</span></td>
+        <td style="font-family:monospace; font-size:12px; text-align:right">${item.inputTok.toLocaleString()}</td>
+        <td style="font-family:monospace; font-size:12px; text-align:right">${item.outputTok.toLocaleString()}</td>
+        <td style="font-weight:700; color:${costColor}">$${cost}</td>
+        <td style="text-align:center; font-weight:600">${item.turns}</td>
+      </tr>`;
+  });
+}
+
+// ─── Annotation queue ─────────────────────────────────────────────────────────
+function renderQueue() {
+  const list = document.getElementById('q-list');
+  list.innerHTML = '';
+  if (QUEUE.length === 0) {
+    list.innerHTML = '<div style="text-align:center; padding:30px 10px; color:var(--muted); font-size:12px;">🎉 Queue complete — all items reviewed</div>';
+    return;
+  }
+  QUEUE.forEach(q => {
+    const tm = INTENT_META[q.truthIntent] || {};
+    const am = INTENT_META[q.agentIntent] || {};
+    list.innerHTML += `
+      <div class="queue-card ${activeQId===q.id?'active':''}" id="qcard-${q.id}" onclick="openQ('${q.id}')">
+        <div class="queue-id">${q.id} · Intent misfire</div>
+        <div class="queue-q">"${q.msg}"</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; font-size:11px;">
+          <span style="color:var(--muted)">Truth:</span><span class="chip ${tm.chip}">${tm.label}</span>
+          <span style="color:var(--muted)">Got:</span><span class="chip chip-red" style="font-size:11px">${am.label}</span>
+          <span style="color:var(--muted); margin-left:4px">Judge: <b style="color:var(--red)">${q.judgeScore}/10</b></span>
+        </div>
+        ${q.verdict ? `<div style="margin-top:8px; font-size:11px; font-weight:600; color:var(--muted)">✓ Reviewed — ${q.verdict}</div>` : ''}
+      </div>`;
+  });
+
+  // badge
+  const pending = QUEUE.filter(q => !q.verdict).length;
+  document.getElementById('queue-badge').textContent = pending;
+  document.getElementById('q-count-label').textContent = pending;
+}
+
+function openQ(id) {
+  activeQId = id;
+  const q = QUEUE.find(x => x.id === id);
+  const tm = INTENT_META[q.truthIntent] || {};
+  const am = INTENT_META[q.agentIntent] || {};
+
+  document.querySelectorAll('.queue-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('qcard-' + id)?.classList.add('active');
+
+  document.getElementById('q-empty').style.display = 'none';
+  const panel = document.getElementById('q-panel');
+  panel.style.display = 'block';
+
+  panel.innerHTML = `
+    <div class="card" style="margin-bottom:0">
+      <div class="card-header">
+        <div>
+          <div style="font-family:monospace; font-size:11px; color:var(--muted); margin-bottom:3px">${q.id} · Intent misfire · Judge score ${q.judgeScore}/10</div>
+          <div style="font-size:14px; font-weight:600">"${q.msg}"</div>
+        </div>
+        <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+          <span class="chip ${tm.chip}">Truth: ${tm.label}</span>
+          <span style="color:var(--muted)">→</span>
+          <span class="chip chip-red">Got: ${am.label}</span>
+        </div>
+      </div>
+      <div style="padding:18px;">
+        <div class="section-label">Conversation</div>
+        <div style="margin-bottom:16px">
+          ${q.conv.map(c => `
+            <div class="bubble-wrap">
+              <div class="bubble-who" style="${c.r==='user'?'text-align:right':''}">${c.r==='user'?'Patient':'Billing Agent'}</div>
+              <div class="bubble ${c.r==='user'?'bubble-patient':'bubble-agent'}">${c.t}</div>
+            </div>`).join('')}
+        </div>
+
+        <div class="judge-box">
+          <div class="judge-header">🤖 LLM Judge reasoning</div>
+          <div class="judge-reasoning">"${q.judgeReasoning}"</div>
+        </div>
+
+        <div class="section-label" style="margin-top:16px; margin-bottom:10px">Your assessment</div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:10px">
+          Review the conversation above. Is the agent's response acceptable despite the intent misparse, or does the wrong intent lead to a substantive failure?
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="ann-btn ann-pass" onclick="selectVerdict('${id}','pass',this)">✓ Acceptable</button>
+          <button class="ann-btn ann-edge" onclick="selectVerdict('${id}','needs-edit',this)">⚑ Needs Edit</button>
+          <button class="ann-btn ann-fail" onclick="selectVerdict('${id}','fail',this)">✕ Fail</button>
+        </div>
+        <textarea class="ann-note" rows="3" placeholder="Add reasoning (optional) — feeds back into the LLM judge prompt…"></textarea>
+        <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
+          <button class="btn btn-secondary" onclick="toast('💾 Draft saved')">Save draft</button>
+          <button class="btn btn-primary" onclick="submitQ('${id}')">Submit →</button>
+        </div>
+      </div>
+    </div>`;
+
+  // re-apply selected state if already reviewed
+  if (q.verdict) {
+    const btns = panel.querySelectorAll('.ann-btn');
+    btns.forEach(b => {
+      if (b.getAttribute('onclick')?.includes(q.verdict)) b.classList.add('sel');
+    });
+  }
+}
+
+function selectVerdict(id, v, btn) {
+  const q = QUEUE.find(x => x.id === id);
+  if (q) q.verdict = v;
+  const siblings = btn.closest('div').querySelectorAll('.ann-btn');
+  siblings.forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+function submitQ(id) {
+  const q = QUEUE.find(x => x.id === id);
+  if (!q.verdict) { toast('⚠️ Select Acceptable, Needs Edit, or Fail first'); return; }
+  toast(`✓ Annotation submitted — ${q.verdict}`);
+  renderQueue();
+  document.getElementById('q-panel').style.display = 'none';
+  document.getElementById('q-empty').style.display = 'block';
+  activeQId = null;
+}
+
+// ─── Charts ──────────────────────────────────────────────────────────────────
+function initCharts() {
+  // Intent accuracy by category
+  const intentLabels = Object.values(INTENT_META).map(m => m.label);
+  const intentAccuracies = [100, 100, 100, 60, 67, 100]; // rough per-category
+  new Chart(document.getElementById('intentChart'), {
+    type: 'bar',
+    data: {
+      labels: intentLabels,
+      datasets: [{
+        label: 'Accuracy %',
+        data: intentAccuracies,
+        backgroundColor: intentAccuracies.map(v => v>=90 ? '#d1fae5' : v>=70 ? '#fef3c7' : '#fee2e2'),
+        borderColor: intentAccuracies.map(v => v>=90 ? '#10b981' : v>=70 ? '#f59e0b' : '#ef4444'),
+        borderWidth: 1.5,
+        borderRadius: 5,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { min: 0, max: 110, ticks: { callback: v => v+'%', font: { size: 11 } }, grid: { color: '#f0f0f0' } },
+        x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+
+  // Cost at scale
+  const volLabels = ['1K', '10K', '50K', '100K', '500K'];
+  const costs = [6, 60, 300, 600, 3000];
+  new Chart(document.getElementById('costChart'), {
+    type: 'line',
+    data: {
+      labels: volLabels,
+      datasets: [{
+        label: 'Monthly LLM cost ($)',
+        data: costs,
+        borderColor: 'var(--accent)',
+        backgroundColor: 'rgba(108,99,255,.08)',
+        borderWidth: 2,
+        tension: .3,
+        pointBackgroundColor: costs.map((_, i) => i===2 ? 'var(--accent)' : '#fff'),
+        pointBorderColor: 'var(--accent)',
+        pointRadius: costs.map((_, i) => i===2 ? 6 : 4),
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { ticks: { callback: v => '$'+v.toLocaleString(), font: { size: 10 } }, grid: { color: '#f0f0f0' } },
+        x: { ticks: { font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+renderIntentTable();
+renderCostTable();
+renderQueue();
+initCharts();
+</script>
+</body>
+</html>
